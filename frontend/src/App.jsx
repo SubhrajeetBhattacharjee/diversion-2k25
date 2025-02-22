@@ -1,25 +1,35 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
 import DashboardPage from "./pages/DashboardPage";
 import FindLostItems from "./pages/FindLostItems";
 import PostLostItems from "./pages/PostLostItems";
 import Home from "./pages/Home";
-import NotFound from "./pages/NotFound"; // Optional: Add a 404 page
+import ProfilePage from "./pages/ProfilePage";
+import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
 import "./styles/global.css";
-
 
 const App = () => {
   return (
     <Routes>
-      {/* Default Route: Loads DashboardPage first */}
-      <Route path="/" element={<DashboardPage />} />
+      {/* Default Route */}
+      <Route path="/" element={<Home />} />
 
-      {/* Other Routes */}
-      <Route path="/home" element={<Home />} />
-      <Route path="/find-lost-items" element={<FindLostItems />} />
-      <Route path="/post-lost-items" element={<PostLostItems />} />
+      {/* Authentication Routes */}
+      <Route path="/signin" element={<SignIn />} />
+      <Route path="/signup" element={<SignUp />} />
 
-      {/* Optional: 404 Not Found Route */}
+      {/* Protected Routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/find-lost-items" element={<FindLostItems />} />
+        <Route path="/post-lost-items" element={<PostLostItems />} />
+      </Route>
+
+      {/* 404 Not Found Route */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

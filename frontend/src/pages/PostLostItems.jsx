@@ -9,6 +9,8 @@ const PostLostItems = () => {
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
   const [countdown, setCountdown] = useState(5); // Countdown timer
+  const [images, setImages] = useState([]); // State for uploaded images
+  const [imagePreviews, setImagePreviews] = useState([]); // State for image previews
 
   // Mock function to simulate sending ETH payment
   const sendPayment = async (ethAmount) => {
@@ -34,6 +36,7 @@ const PostLostItems = () => {
       location: formData.get("location"),
       ethAmount: parseFloat(formData.get("ethAmount")),
       contact: formData.get("contact"),
+      images: images, // Include the uploaded images
     };
 
     setIsLoading(true);
@@ -64,6 +67,34 @@ const PostLostItems = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Handle image upload
+  const handleImageUpload = (event) => {
+    const files = event.target.files;
+    const newImages = [];
+    const newImagePreviews = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      newImages.push(file);
+      newImagePreviews.push(URL.createObjectURL(file));
+    }
+
+    setImages([...images, ...newImages]);
+    setImagePreviews([...imagePreviews, ...newImagePreviews]);
+  };
+
+  // Handle image removal
+  const handleImageRemove = (index) => {
+    const newImages = [...images];
+    const newImagePreviews = [...imagePreviews];
+
+    newImages.splice(index, 1);
+    newImagePreviews.splice(index, 1);
+
+    setImages(newImages);
+    setImagePreviews(newImagePreviews);
   };
 
   return (
@@ -166,6 +197,46 @@ const PostLostItems = () => {
               required
             />
           </div>
+
+          {/* Image Upload */}
+          <div className="mb-6">
+            <label htmlFor="images" className="block text-lg font-medium mb-2">
+              Upload Images
+            </label>
+            <input
+              type="file"
+              id="images"
+              name="images"
+              className="w-full px-4 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              multiple
+              onChange={handleImageUpload}
+            />
+          </div>
+
+          {/* Image Previews */}
+          {imagePreviews.length > 0 && (
+            <div className="mb-6">
+              <label className="block text-lg font-medium mb-2">Image Previews</label>
+              <div className="flex flex-wrap gap-4">
+                {imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={preview}
+                      alt={`Preview ${index}`}
+                      className="w-24 h-24 object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                      onClick={() => handleImageRemove(index)}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Submit Button */}
           <button

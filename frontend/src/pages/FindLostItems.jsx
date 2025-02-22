@@ -11,6 +11,8 @@ const FindLostItems = () => {
   const [selectedKeywords, setSelectedKeywords] = useState([]); // Selected keywords for filtering
   const [selectedItem, setSelectedItem] = useState(null); // Selected item for modal
   const [currentPage, setCurrentPage] = useState(1); // Current page for pagination
+  const [sliderValue, setSliderValue] = useState(0); // Slider value for marking as claimed
+  const [currentImageIndex, setCurrentImageIndex] = useState(0); // Track current image index for modal
   const itemsPerPage = 9; // Number of items per page
 
   // Mock data for lost items
@@ -22,7 +24,10 @@ const FindLostItems = () => {
       location: { latitude: 40.785091, longitude: -73.968285 }, // Central Park, New York
       bounty: 0.5,
       date: "2023-10-01",
-      image: "https://via.placeholder.com/300", // Mock image URL
+      images: [
+        "https://via.placeholder.com/300",
+        "https://via.placeholder.com/400",
+      ], // Mock image URLs
     },
     {
       id: 2,
@@ -31,7 +36,7 @@ const FindLostItems = () => {
       location: { latitude: 40.758896, longitude: -73.98513 }, // Times Square, New York
       bounty: 1.2,
       date: "2023-10-05",
-      image: "https://via.placeholder.com/300", // Mock image URL
+      images: [], // No images attached
     },
     {
       id: 3,
@@ -40,7 +45,7 @@ const FindLostItems = () => {
       location: { latitude: 40.706077, longitude: -73.996864 }, // Brooklyn Bridge, New York
       bounty: 0.2,
       date: "2023-10-10",
-      image: "https://via.placeholder.com/300", // Mock image URL
+      images: ["https://via.placeholder.com/300"], // Mock image URL
     },
     // Add more items as needed
   ];
@@ -121,6 +126,26 @@ const FindLostItems = () => {
     }
   };
 
+  // Handle modal open
+  const handleModalOpen = (item) => {
+    setSelectedItem(item);
+    setSliderValue(0); // Reset slider value
+    setCurrentImageIndex(0); // Reset image index
+  };
+
+  // Handle image navigation
+  const handleNextImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex < selectedItem.images.length - 1 ? prevIndex + 1 : 0
+    );
+  };
+
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex > 0 ? prevIndex - 1 : selectedItem.images.length - 1
+    );
+  };
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col relative overflow-hidden">
       {/* Topbar */}
@@ -192,8 +217,8 @@ const FindLostItems = () => {
               className="px-4 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               <option value="">Order</option>
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
+              <option value="asc">Highest To Lowest</option>
+              <option value="desc">Lowest To Highest</option>
             </select>
             <button
               onClick={resetFilters}
@@ -209,14 +234,20 @@ const FindLostItems = () => {
           {currentItems.map((item) => (
             <div
               key={item.id}
-              onClick={() => setSelectedItem(item)}
+              onClick={() => handleModalOpen(item)}
               className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-700 hover:border-red-500 cursor-pointer"
             >
-              <img
-                src={item.image}
-                alt={item.name}
-                className="w-full h-48 object-cover rounded-lg mb-4"
-              />
+              {item.images.length > 0 ? (
+                <img
+                  src={item.images[0]}
+                  alt={item.name}
+                  className="w-full h-48 object-cover rounded-lg mb-4"
+                />
+              ) : (
+                <div className="w-full h-48 flex items-center justify-center bg-gray-700 rounded-lg mb-4">
+                  <p className="text-gray-400">No image attached</p>
+                </div>
+              )}
               <h2 className="text-xl font-bold text-red-500 mb-2">{item.name}</h2>
               <p className="text-gray-400 mb-4">{item.description}</p>
               <p className="text-gray-400 mb-2">
@@ -263,11 +294,36 @@ const FindLostItems = () => {
             </button>
 
             {/* Item Details */}
-            <img
-              src={selectedItem.image}
-              alt={selectedItem.name}
-              className="w-full h-64 object-cover rounded-lg mb-4"
-            />
+            {selectedItem.images.length > 0 ? (
+              <div className="relative">
+                <img
+                  src={selectedItem.images[currentImageIndex]}
+                  alt={selectedItem.name}
+                  className="w-full h-64 object-cover rounded-lg mb-4"
+                />
+                {/* Arrow Buttons */}
+                {selectedItem.images.length > 1 && (
+                  <>
+                    <button
+                      onClick={handlePrevImage}
+                      className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+                    >
+                      ◄
+                    </button>
+                    <button
+                      onClick={handleNextImage}
+                      className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+                    >
+                      ►
+                    </button>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="w-full h-64 flex items-center justify-center bg-gray-700 rounded-lg mb-4">
+                <p className="text-gray-400">No image attached</p>
+              </div>
+            )}
             <h2 className="text-2xl font-bold text-red-500 mb-2">{selectedItem.name}</h2>
             <p className="text-gray-400 mb-4">{selectedItem.description}</p>
             <p className="text-gray-400 mb-2">
@@ -282,12 +338,35 @@ const FindLostItems = () => {
 
             {/* Slider to Mark as Claimed */}
             <div className="mt-6">
-              <button
-                onClick={() => handleMarkAsClaimed(selectedItem)}
-                className="w-full bg-red-500 text-white py-3 px-6 rounded-lg font-bold hover:bg-red-600 transition duration-300"
-              >
-                Slide to Mark as Claimed
-              </button>
+              <p className="text-gray-400 mb-2 text-center">Slide if you have found the item</p>
+              <div className="relative">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={sliderValue}
+                  onChange={(e) => setSliderValue(e.target.value)}
+                  className="w-full h-3 bg-gray-700 rounded-full appearance-none cursor-pointer range-thumb:bg-orange-500 range-track:bg-orange-300"
+                />
+                <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
+                  <span className="text-orange-500 text-sm">◄</span>
+                </div>
+                <div className="absolute inset-y-0 right-0 flex items-center pointer-events-none">
+                  <span className="text-orange-500 text-sm">►</span>
+                </div>
+              </div>
+              {/* Animated Arrow */}
+              <div className="flex justify-center mt-2 animate-bounce">
+                <span className="text-orange-500 text-2xl">↓</span>
+              </div>
+              {sliderValue === "100" && (
+                <button
+                  onClick={() => handleMarkAsClaimed(selectedItem)}
+                  className="w-full bg-orange-500 text-white py-3 px-6 rounded-lg font-bold hover:bg-orange-600 transition duration-300 mt-4"
+                >
+                  Confirm Mark as Claimed
+                </button>
+              )}
             </div>
           </div>
         </div>
