@@ -1,7 +1,7 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
+import SignUp from "./pages/Signup";
 import DashboardPage from "./pages/DashboardPage";
 import FindLostItems from "./pages/FindLostItems";
 import PostLostItems from "./pages/PostLostItems";
