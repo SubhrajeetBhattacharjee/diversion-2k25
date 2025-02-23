@@ -1,0 +1,6 @@
+name = "fraud-detection-worker"
+type = "javascript"
+
+main = "src/index.js"
+
+compatibility_date = "2024-02-23"
